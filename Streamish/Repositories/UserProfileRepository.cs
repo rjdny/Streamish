@@ -53,8 +53,8 @@ namespace Streamish.Repositories
                     cmd.CommandText = @"SELECT up.Id, up.Name, up.Email, up.ImageUrl, up.DateCreated,
                                         v.id as VideoId, v.title, v.description, v.url, v.datecreated as videoDateCreated, v.UserProfileId, 
                                         c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId, c.VideoId
-                                        FROM Video v
-                                        LEFT JOIN UserProfile up on up.id = v.userprofileid
+                                        FROM UserProfile up
+                                        LEFT JOIN Video v on v.UserProfileId = up.Id
                                         LEFT JOIN Comment c on c.VideoId = v.Id
                                         WHERE up.Id = @Id";
 
@@ -122,6 +122,7 @@ namespace Streamish.Repositories
                 
             }
         }
+
 
         public UserProfile GetById(int id)
         {
