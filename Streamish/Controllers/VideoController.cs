@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Streamish.Repositories;
 using Streamish.Models;
+using System.Linq;
 
 namespace Streamish.Controllers
 {
@@ -21,6 +22,18 @@ namespace Streamish.Controllers
             return Ok(_videoRepository.GetAll());
         }
 
+        [HttpGet("search")]
+        public IActionResult Search(string q, bool sortDesc)
+        {
+            return Ok(_videoRepository.Search(q, sortDesc));
+        }
+
+        [HttpGet("hottest")]
+        public IActionResult GetHottestSince(string since)
+        {
+            DateTime dt = DateTime.Parse(since);
+            return Ok(_videoRepository.GetAll().Where((x) => x.DateCreated >= dt));
+        }
 
         [HttpGet("GetWithComments")]
         public IActionResult GetWithComments()
