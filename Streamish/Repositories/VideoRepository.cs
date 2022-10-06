@@ -20,11 +20,11 @@ namespace Streamish.Repositories
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"
-                SELECT v.Id AS VideoId, v.Title, v.Description, v.Url, 
-                       v.DateCreated AS VideoDateCreated, v.UserProfileId As VideoUserProfileId,
+                SELECT v.Id, v.Title, v.Description, v.Url, 
+                       v.DateCreated, v.UserProfileId,
 
-                       up.Name, up.Email, up.DateCreated AS UserProfileDateCreated,
-                       up.ImageUrl AS UserProfileImageUrl,
+                    up.Id as UserProfileId, up.Name as UserName, up.ImageUrl as UserProfileImageUrl,
+                    up.Email as UserEmail, up.DateCreated as UserProfileDateCreated,
                         
                        c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId
                   FROM Video v 
@@ -39,7 +39,7 @@ namespace Streamish.Repositories
                         var videos = new List<Video>();
                         while (reader.Read())
                         {
-                            var videoId = DbUtils.GetInt(reader, "VideoId");
+                            var videoId = DbUtils.GetInt(reader, "Id");
 
                             var existingVideo = videos.FirstOrDefault(p => p.Id == videoId);
                             if (existingVideo == null)
@@ -77,8 +77,8 @@ namespace Streamish.Repositories
                     cmd.CommandText = @"
                SELECT v.Id, v.Title, v.Description, v.Url, v.DateCreated, v.UserProfileId,
 
-                      up.Name, up.Email, up.DateCreated AS UserProfileDateCreated,
-                      up.ImageUrl AS UserProfileImageUrl
+                    up.Id as UserProfileId, up.Name as UserName, up.ImageUrl as UserProfileImageUrl,
+                    up.Email as UserEmail, up.DateCreated as UserProfileDateCreated
                         
                  FROM Video v 
                       JOIN UserProfile up ON v.UserProfileId = up.Id
@@ -108,14 +108,17 @@ namespace Streamish.Repositories
                 using (var cmd = conn.CreateCommand())
                 {
                     var sql = @"
-              SELECT v.Id, v.Title, v.Description, v.Url, v.DateCreated AS VideoDateCreated, v.UserProfileId,
+                    SELECT v.Id, v.Title, v.Description, v.Url, 
+                       v.DateCreated, v.UserProfileId,
 
-                     up.Name, up.Email, up.DateCreated AS UserProfileDateCreated,
-                     up.ImageUrl AS UserProfileImageUrl
+                    up.Id as UserProfileId, up.Name as UserName, up.ImageUrl as UserProfileImageUrl,
+                    up.Email as UserEmail, up.DateCreated as UserProfileDateCreated,
                         
-                FROM Video v 
-                     JOIN UserProfile up ON v.UserProfileId = up.Id
-               WHERE v.Title LIKE @Criterion OR v.Description LIKE @Criterion";
+                       c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId
+                    FROM Video v 
+                       JOIN UserProfile up ON v.UserProfileId = up.Id
+                       LEFT JOIN Comment c on c.VideoId = v.id
+                    WHERE v.Title LIKE @Criterion OR v.Description LIKE @Criterion";
 
                     if (sortDescending)
                     {
@@ -134,8 +137,28 @@ namespace Streamish.Repositories
                         var videos = new List<Video>();
                         while (reader.Read())
                         {
-                            videos.Add(ReadVideo(reader));
+                            var videoId = DbUtils.GetInt(reader, "Id");
+
+                            var existingVideo = videos.FirstOrDefault(p => p.Id == videoId);
+                            if (existingVideo == null)
+                            {
+                                existingVideo = ReadVideo(reader);
+
+                                videos.Add(existingVideo);
+                            }
+
+                            if (DbUtils.IsNotDbNull(reader, "CommentId"))
+                            {
+                                existingVideo.Comments.Add(new Comment()
+                                {
+                                    Id = DbUtils.GetInt(reader, "CommentId"),
+                                    Message = DbUtils.GetString(reader, "Message"),
+                                    VideoId = videoId,
+                                    UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId")
+                                });
+                            }
                         }
+
 
                         return videos;
                     }
