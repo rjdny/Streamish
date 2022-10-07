@@ -1,45 +1,65 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
 import { addVideo } from "../modules/videoManager";
 
-//Video Form Element
-const VideoForm = ({getVideos}) => {
-    const [errMsg, setErrMsg] = useState('')
+const VideoForm = ({ getVideos }) => {
+  const emptyVideo = {
+    title: '',
+    description: '',
+    url: ''
+  };
 
-    //Submit the new video info to database
-    const Submit = () =>{
-        let Title = document.querySelector('#nvTitle')
-        let Description = document.querySelector('#nvDesc')
-        let Url = document.querySelector('#nvUrl')
+  const [video, setVideo] = useState(emptyVideo);
 
-        if(!Title.value){
-            setErrMsg('Please enter a valid Title.')
-        }
-        else if(!Url.value){
-            setErrMsg('Please enter a valid Youtube URL.')
-        }
-        else{
-        //Add the info to the database, clear the text boxes, and update the vido list to include the new one.
-        addVideo({title:Title.value, description:Description.value, url: Url.value}).then(() => {
-            Title.value = '';
-            Description.value = '';
-            Url.value = '';
-            setErrMsg('')
-        }).then(() => getVideos())
-        }
-    }
+  const handleInputChange = (evt) => {
+    const value = evt.target.value;
+    const key = evt.target.id;
 
-    //return a div with all the options for customizing a video before adding it to the database, and the button to do so.
-    return (<div style={{zIndex:'999999',position:'absolute', marginLeft:"10px",border:"1px solid grey",borderRadius:"10", width:"230px"}}>
-        <h3>Add a video</h3>
-        <label>Title: <input id="nvTitle" type={"text"}></input></label>
-        <label>Description: <input id="nvDesc" type={"text"}></input></label>
-        <label>URL: <input id="nvUrl" type={"text"}></input></label>
-        <div><label style={{color:'red'}}>{errMsg}</label></div>
-        <button onClick={() => {Submit()}} style={{height:"35px", margin:"10px", borderRadius:"20px"}}>Add Video</button>
-    </div>)
-}
+    const videoCopy = { ...video };
 
+    videoCopy[key] = value;
+    setVideo(videoCopy);
+  };
+
+  const handleSave = (evt) => {
+    evt.preventDefault();
+
+    addVideo(video).then(() => {
+      setVideo(emptyVideo);
+      getVideos();
+    });
+  };
+
+  return (
+      <Form style={{
+        width:'300px', 
+        borderColor:'#404040', 
+        borderStyle:'solid',
+        position:'absolute',
+        top:'100px',
+        left:'35%'}}>
+      <h2>Create a video</h2>
+      <FormGroup>
+        <Label for="title">Title</Label>
+        <Input type="text" name="title" id="title" placeholder="video title"
+          value={video.title}
+          onChange={handleInputChange} />
+      </FormGroup>
+      <FormGroup>
+        <Label for="url">URL</Label>
+        <Input type="text" name="url" id="url" placeholder="video link" 
+          value={video.url}
+          onChange={handleInputChange} />
+      </FormGroup>
+      <FormGroup>
+        <Label for="description">Description</Label>
+        <Input type="textarea" name="description" id="description"
+          value={video.description}
+          onChange={handleInputChange} />
+      </FormGroup>
+      <Button className="btn btn-primary" onClick={handleSave}>Submit</Button>
+    </Form>
+  );
+};
 
 export default VideoForm;
-
-

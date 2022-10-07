@@ -24,9 +24,6 @@ const VideoList = () => {
 
     return (
         <div style={{marginTop:'20px'}}>
-            <div style={{position:'absolute', marginLeft:'20px', marginTop:'-20px'}}>
-                <h1>Streamish</h1>
-            </div>
             <input style={{width:"300px"}} id="searchq" type={'Text'}></input>
             <button onClick={() => {setSearchQ(document.querySelector('#searchq').value)}}>Search</button>
             <section>
@@ -36,8 +33,7 @@ const VideoList = () => {
                 type={'checkbox'}>
                 </input> Descending Order</label>
             </section>
-            <VideoForm getVideos={getVideos}></VideoForm>
-            <section style={{display:'flex',flexWrap:'wrap',marginLeft:'250px'}}>
+            <section style={{display:'flex',flexWrap:'wrap',marginLeft:'100px'}}>
                 {videos.map(v =>
                     <Video video={v}></Video>
                 )}

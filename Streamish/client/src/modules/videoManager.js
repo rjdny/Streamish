@@ -1,5 +1,10 @@
 ﻿const baseUrl = '/api/Video';
 
+
+export const getVideo = (id) => {
+    return fetch(`${baseUrl}/GetByIdWithComments/${id}`).then((res) => res.json());
+};
+
 export const getAllVideos = () => {
     return fetch(baseUrl)
         .then((res) => res.json())
